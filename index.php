@@ -51,10 +51,10 @@ $paths = new Config\Paths();
  * the pieces all working together.
  */
 
-$app = Config\Services::codeigniter();
-$app->initialize();
-$context = is_cli() ? 'php-cli' : 'web';
-$app->setContext($context);
+// $app = Config\Services::codeigniter();
+// $app->initialize();
+// $context = is_cli() ? 'php-cli' : 'web';
+// $app->setContext($context);
 
 /*
  *---------------------------------------------------------------
@@ -64,4 +64,4 @@ $app->setContext($context);
  * up the engines and make this app do its thang.
  */
 
-$app->run();
+// $app->run();
