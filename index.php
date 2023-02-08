@@ -39,7 +39,7 @@ $paths = new Config\Paths();
 
 // Load environment settings from .env files into $_SERVER and $_ENV
 // require_once SYSTEMPATH . 'Config/DotEnv.php';
-(new CodeIgniter\Config\DotEnv(ROOTPATH))->load();
+// (new CodeIgniter\Config\DotEnv(ROOTPATH))->load();
 
 /*
  * ---------------------------------------------------------------
