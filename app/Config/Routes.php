@@ -34,6 +34,7 @@ $routes->set404Override();
  */
 
 $routes->get('/', 'HomeController::index');
+$routes->get('/test-api', 'HomeController::testApi');
 
 // API Group Routing
 $routes->group('api', function($routes){
