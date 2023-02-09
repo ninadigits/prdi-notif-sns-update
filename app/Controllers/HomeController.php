@@ -50,6 +50,6 @@ class HomeController extends ResourceController
         $result = curl_exec($curl);
         curl_close($curl);
         $data = json_decode($result);
-        return $this->respondCreated($data->RESPONSE1);
+        return $this->respondCreated($data->RESPONSE1, 200);
     }
 }
