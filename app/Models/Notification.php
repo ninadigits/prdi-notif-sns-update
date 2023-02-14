@@ -46,24 +46,54 @@ class Notification extends Model
         // End Of : Connection to AWS SNS Broker
         // -------------------------------------------------------
         $topic = 'arn:aws:sns:ap-southeast-3:422572663394:ecosystem-sit-topic-payment-labtest';
-        $eventTime = time();
         try {
             $url = getenv('api.Zuhlke');
+            // $idx = 0;
             foreach ($notificationData->RESPONSE1 as $key => $res) :
                 // -------------------------------------
                 // Start Of : Store Queue to SNS Topic
                 // -------------------------------------
-                $message = [
-                    "type" => "LAB_TEST_ORDER_AND_PAYMENT", 
-                    "version" => "V1",
-                    "eventTime" => $eventTime,
-                    "payload" => $res
-                ];
-                $sendEvents = $snsClient->publish([
-                    'Message' => json_encode($message),
-                    'TopicArn' => $topic
-                ]);
-                $sendEvents->toArray();
+                if($res->STATUS_PAYMENT == "FAILED") {
+                    $message = [
+                        "type" => "LAB_TEST_ORDER_PAYMENT_MADE", 
+                        "version" => "V1",
+                        "eventTime" => strtotime($res->FINISH_TIMESTAMP),
+                        "payload" => [
+                            'order_id' => $res->BOOKING_ORDER,
+                            'patient_id' => $res->PATIENT_ID,
+                            'payment_result' => [
+                                'paymentStatus' => 'FAIL'
+                            ],
+                            'outlet_id' => $res->OUTLET_ID
+                        ],
+                    ];
+                    $snsClient->publish([
+                        'Message' => json_encode($message),
+                        'TopicArn' => $topic
+                    ]);
+                    // $sendEvents->toArray();
+                } else {
+                    $message = [
+                        "type" => "LAB_TEST_ORDER_PAYMENT_MADE", 
+                        "version" => "V1",
+                        "eventTime" => strtotime($res->FINISH_TIMESTAMP),
+                        "payload" => [
+                            'order_id' => $res->BOOKING_ORDER,
+                            'patient_id' => $res->PATIENT_ID,
+                            'payment_result' => [
+                                'paymentStatus' => $res->STATUS_PAYMENT
+                            ],
+                            'outlet_id' => $res->OUTLET_ID
+                        ],
+                    ];
+                    
+                    $snsClient->publish([
+                        'Message' => json_encode($message),
+                        'TopicArn' => $topic
+                    ]);
+                    // $sendEvents->toArray();
+                }
+                // $idx++;
                 // --------------------------------------
                 // Start Of : Store Data To Zhulke API
                 // --------------------------------------
@@ -85,10 +115,9 @@ class Notification extends Model
                     'Accept-Language'   => 'en',
                 ];
     
-                if ($res->STATUS == 'PAID') {
+                if ($res->STATUS == 'PAID' || $res->STATUS == 'PAYMENT_FAILED') {
                     $client = Services::curlrequest();
                     $response = $client->request('PATCH', $url, ['json' => $data, 'headers' => $request_header, 'http_errors' => false, 'debug' => true]);
-    
                     $decode = json_decode($response->getBody(), true);
     
                     // echo json_encode($decode); die;
@@ -144,7 +173,6 @@ class Notification extends Model
         // End Of : Connection to AWS SNS Broker
         // -------------------------------------------------------
         $topic = 'arn:aws:sns:ap-southeast-3:422572663394:ecosystem-sit-topic-order-labtest';
-        $eventTime = time();
         try {
             $url = getenv('api.Zuhlke');
             foreach ($notificationData->RESPONSE1 as $key => $res) :
@@ -152,16 +180,23 @@ class Notification extends Model
                 // Start Of : Store Queue to SNS Topic
                 // -------------------------------------
                 $message = [
-                    "type" => "LAB_TEST_RESULT_COMPLETED",
+                    "type" => "LAB_TEST_ORDER_PAYMENT_MADE", 
                     "version" => "V1",
-                    "eventTime" => $eventTime,
-                    "payload" => $res
+                    "eventTime" => strtotime($res->FINISH_TIMESTAMP),
+                    "payload" => [
+                        'order_id' => $res->BOOKING_ORDER,
+                        'patient_id' => $res->PATIENT_ID,
+                        'payment_result' => [
+                            'paymentStatus' => $res->STATUS_PAYMENT
+                        ],
+                        'outlet_id' => $res->OUTLET_ID
+                    ],
                 ];
-                $sendEvents = $snsClient->publish([
+                $snsClient->publish([
                     'Message' => json_encode($message),
                     'TopicArn' => $topic
                 ]);
-                $sendEvents->toArray();
+                // $sendEvents->toArray();
                 // --------------------------------------
                 // Start Of : Store Data To Zhulke API
                 // --------------------------------------
